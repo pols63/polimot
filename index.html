@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+
+<body>
+	<div id="uno"
+		style="display: inline-block; width: 100px; background-color: black; color: white; position: relative;">
+	</div>
+	<div id="dos"
+		style="display: inline-block; width: 100px; height: 100px; background-color: black; color: white; position: relative;">
+	</div>
+</body>
+<script src="polimot.js"></script>
+<script>
+	let div1 = document.querySelector('#uno');
+	let div2 = document.querySelector('#dos');
+	let objeto1 = {
+		cantidad: 0
+	};
+	let objeto2 = {
+		cantidad: 0
+	};
+	let anim = new Polimot(
+		{
+			// target: 'div',
+			target: div1,
+			// stagger: 300,
+			style: {
+				// backgroundColor: ['#000000', '#ff0055'],
+				// rotate: [0, 360, '?deg']
+				height: {
+					values: [100, '?px'],
+					easing: 'softInElastic'
+				}
+			},
+			duration: 1000,
+			easing: 'linear',
+			// stagger: 1000,
+			begin: function() {
+				console.log('inicio');
+			},
+			complete: function() {
+				console.log('fin');
+			}
+		}
+		// {
+		// 	target: '#dos',
+		// 	style: {
+		// 		width: [20, '?px']
+		// 	},
+		// 	duration: 1000,
+		// 	easing: [1, -1, 0, 2]
+		// }
+	);
+	anim.loop = 3;
+	// anim.direction = 'reverse';
+</script>
+
+</html>
