@@ -621,7 +621,7 @@ class Polimot {
 		}
 
 		/* Compila el motor obteniendo los timeline resultantes. */
-		this._.compile = function () {
+		this._.compile = () => {
 			if (this._.status === 'pause') this.pause()
 			let reference = {
 				markTime: 0
@@ -630,9 +630,9 @@ class Polimot {
 				let neoTimeline = this._.makeTimeline(timeline, idxTimeline, reference)
 				if (neoTimeline !== null) this._.timelines = this._.timelines.concat(neoTimeline)
 			})
-		}.bind(this)
+		}
 
-		/* Dibuja el frame estableciendo todas las propiedades de los targets */
+		/* Dibuja el frame estableciendo todas las propiedades a los targets */
 		this._.drawFrame = function (subTime, timeline) {
 			let percentTime = subTime / timeline.duration
 			let transformDefinitions = []
@@ -681,11 +681,11 @@ class Polimot {
 							timeline.target[definitionName] = finalValue
 							break
 						case 'style':
-							if (Polimot.transformFunctions.indexOf(definitionName) > -1) {
+							if (Polimot.transformFunctions.includes(definitionName)) {
 								/* Las propiedades de tipo transform se aplican al target al final, primero se agregan a un array. */
 								transformDefinitions.push(`${definitionName}(${finalValue})`)
-							} else if (Polimot.clipPathFunctions.indexOf(definitionName) > -1) {
-								/* Las propiedades de tipo transform se aplican al target al final, primero se agregan a un array. */
+							} else if (Polimot.clipPathFunctions.includes(definitionName)) {
+								/* Las propiedades de tipo clipPath se aplican al target al final, primero se agregan a un array. */
 								clipPathDefinitions.push(`${definitionName}(${finalValue})`)
 							} else {
 								timeline.target.style[definitionName] = finalValue
@@ -699,42 +699,44 @@ class Polimot {
 		}
 
 		/* Itera en todos los timeline para dibujar sus respectivos frames. */
-		this._.setFrame = function (mainTime) {
-			this._.timelines.forEach(function (timeline, idxTimeline) {
-				let subTime
+		this._.setFrame = currentTime => {
+			this._.timelines.forEach(timeline => {
+				let currentTimeInTimeline
 				let toExecute = []
 				let param = {
 					target: timeline.target,
-					mainTime: mainTime,
+					currentTime,
 					direction: this._.direction
 				}
 				/* Identifica en qué posición se encuentra el cabezal en la animación y determina si dibujar o no todos los timeline */
 				if (this._.direction !== 'reverse') {
-					if (timeline.startTime > mainTime && this._.status !== 'playing') {
-						subTime = 0
-						param.subTime = subTime
-					} else if (timeline.endTime <= mainTime && (!timeline.terminated || this._.status !== 'playing')) {
-						subTime = timeline.duration
-						param.subTime = subTime
+					if (timeline.startTime > currentTime && this._.status !== 'playing') {
+						currentTimeInTimeline = 0
+						param.subTime = currentTimeInTimeline
+					} else if (timeline.endTime <= currentTime && (!timeline.terminated || this._.status !== 'playing')) {
+						currentTimeInTimeline = timeline.duration
+						param.subTime = currentTimeInTimeline
+						if (this._.status === 'playing' && typeof timeline.begin === 'function' && !timeline.started) toExecute.push(timeline.begin)
 						if (this._.status === 'playing' && typeof timeline.complete === 'function') toExecute.push(timeline.complete)
 						timeline.terminated = true
 						timeline.started = true
 					}
 				} else {
-					if (timeline.endTime < mainTime && this._.status !== 'playing') {
-						subTime = timeline.duration
-						param.subTime = subTime
-					} else if (timeline.startTime >= mainTime && (!timeline.terminated || this._.status !== 'playing')) {
-						subTime = 0
-						param.subTime = subTime
+					if (timeline.endTime < currentTime && this._.status !== 'playing') {
+						currentTimeInTimeline = timeline.duration
+						param.subTime = currentTimeInTimeline
+					} else if (timeline.startTime >= currentTime && (!timeline.terminated || this._.status !== 'playing')) {
+						currentTimeInTimeline = 0
+						param.subTime = currentTimeInTimeline
+						if (this._.status === 'playing' && typeof timeline.complete === 'function' && !timeline.started) toExecute.push(timeline.complete)
 						if (this._.status === 'playing' && typeof timeline.begin === 'function') toExecute.push(timeline.begin)
 						timeline.terminated = true
 						timeline.started = true
 					}
 				}
-				if (timeline.startTime <= mainTime && timeline.endTime >= mainTime) {
-					subTime = mainTime - timeline.startTime
-					param.subTime = subTime
+				if (timeline.startTime <= currentTime && timeline.endTime >= currentTime) {
+					currentTimeInTimeline = currentTime - timeline.startTime
+					param.subTime = currentTimeInTimeline
 					if (this._.status === 'playing') {
 						if (!timeline.started) {
 							if (this._.direction !== 'reverse' && typeof timeline.begin === 'function') {
@@ -748,19 +750,17 @@ class Polimot {
 					}
 				}
 				/* Si se ha logrado identificar el tiempo dentro del timeline, se dibuja el frame del timeline. */
-				if (subTime !== undefined) this._.drawFrame(subTime, timeline)
+				if (currentTimeInTimeline !== undefined) this._.drawFrame(currentTimeInTimeline, timeline)
 				toExecute.forEach(function (toDo) {
 					toDo(param)
 				})
-			}.bind(this))
-		}.bind(this)
-
-		this._.resetTimelines = function () {
-			this._.timelines.forEach(function (timeline, idxTimeline) {
-				timeline.terminated = false
-				timeline.started = false
 			})
-		}.bind(this)
+		}
+
+		this._.resetTimelines = () => this._.timelines.forEach(timeline => {
+			timeline.terminated = false
+			timeline.started = false
+		})
 
 		this._.compile()
 	}

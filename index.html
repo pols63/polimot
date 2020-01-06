@@ -19,8 +19,7 @@
 	let objeto2 = {
 		cantidad: 0
 	};
-	let anim = new Polimot(
-		{
+	let anim = new Polimot({
 			// target: 'div',
 			target: div1,
 			// stagger: 300,
@@ -32,7 +31,7 @@
 					easing: 'softInElastic'
 				}
 			},
-			duration: 1000,
+			duration: 2000,
 			easing: 'linear',
 			// stagger: 1000,
 			begin: function() {
@@ -41,18 +40,28 @@
 			complete: function() {
 				console.log('fin');
 			}
-		}
-		// {
-		// 	target: '#dos',
-		// 	style: {
-		// 		width: [20, '?px']
-		// 	},
-		// 	duration: 1000,
-		// 	easing: [1, -1, 0, 2]
-		// }
-	);
-	anim.loop = 3;
+		},{
+			target: '#dos',
+			style: {
+				width: [20, '?px']
+			},
+			duration: 1000,
+			easing: [1, -1, 0, 2]
+		}, {
+			target: {qwe: 58},
+			props: {
+				qwe: [23, 78],
+			},
+			update(obj) {
+				console.log(obj.target)
+			}
+		});
+	// anim.loop = 3;
 	// anim.direction = 'reverse';
+
+	setTimeout(() => {
+		anim.play()
+	}, 1000)
 </script>
 
 </html>
