@@ -82,220 +82,6 @@ class Color {
 
 class Polimot {
 
-	static easing = {
-		linear: t => t,
-		inQuad: t => t * t,
-		outQuad: t => t * (2 - t),
-		inOutQuad: t => t < .5 ? 2 * t * t : -1 + (4 - 2 * t) * t,
-		inCubic: t => t * t * t,
-		outCubic: t => (--t) * t * t + 1,
-		inOutCubic(t) { return t < .5 ? 4 * t * t * t : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1; },
-		inQuart(t) { return t * t * t * t; },
-		outQuart(t) { return 1 - (--t) * t * t * t; },
-		inOutQuart(t) { return t < .5 ? 8 * t * t * t * t : 1 - 8 * (--t) * t * t * t; },
-		inQuint(t) { return t * t * t * t * t; },
-		outQuint(t) { return 1 + (--t) * t * t * t * t; },
-		inOutQuint(t) { return t < .5 ? 16 * t * t * t * t * t : 1 + 16 * (--t) * t * t * t * t; },
-		inSine(t) { return -1 * Math.cos(t / 1 * (Math.PI * 0.5)) + 1; },
-		outSine(t) { return Math.sin(t / 1 * (Math.PI * 0.5)); },
-		inOutSine(t) { return -1 / 2 * (Math.cos(Math.PI * t) - 1); },
-		inExpo(t) { return (t == 0) ? 0 : Math.pow(2, 10 * (t - 1)); },
-		outExpo(t) { return (t == 1) ? 1 : (-Math.pow(2, -10 * t) + 1); },
-		inOutExpo(t) {
-			if (t == 0) return 0
-			if (t == 1) return 1
-			if ((t /= 1 / 2) < 1) return 1 / 2 * Math.pow(2, 10 * (t - 1))
-			return 1 / 2 * (-Math.pow(2, -10 * --t) + 2)
-		},
-		inCirc(t) { return -1 * (Math.sqrt(1 - t * t) - 1); },
-		outCirc(t) { return Math.sqrt(1 - (t = t - 1) * t); },
-		inOutCirc(t) {
-			if ((t /= 1 / 2) < 1) return -1 / 2 * (Math.sqrt(1 - t * t) - 1)
-			return 1 / 2 * (Math.sqrt(1 - (t -= 2) * t) + 1)
-		},
-		outElastic(t) {
-			var s = 1.70158
-			var p = 0
-			var a = 1
-			if (t == 0) return 0
-			if (t == 1) return 1
-			if (!p) p = 0.3
-			if (a < 1) {
-				a = 1
-				var s = p / 4
-			} else var s = p / (2 * Math.PI) * Math.asin(1 / a)
-			return -(a * Math.pow(2, 10 * (t -= 1)) * Math.sin((t - s) * (2 * Math.PI) / p))
-		},
-		inElastic(t) {
-			var s = 1.70158
-			var p = 0
-			var a = 1
-			if (t == 0) return 0
-			if (t == 1) return 1
-			if (!p) p = 0.3
-			if (a < 1) {
-				a = 1
-				var s = p / 4
-			} else var s = p / (2 * Math.PI) * Math.asin(1 / a)
-			return a * Math.pow(2, -10 * t) * Math.sin((t - s) * (2 * Math.PI) / p) + 1
-		},
-		inOutElastic(t) {
-			var s = 1.70158
-			var p = 0
-			var a = 1
-			if (t == 0) return 0
-			if ((t /= 1 / 2) == 2) return 1
-			if (!p) p = (0.3 * 1.5)
-			if (a < 1) {
-				a = 1
-				var s = p / 4
-			} else var s = p / (2 * Math.PI) * Math.asin(1 / a)
-			if (t < 1) return -.5 * (a * Math.pow(2, 10 * (t -= 1)) * Math.sin((t - s) * (2 * Math.PI) / p))
-			return a * Math.pow(2, -10 * (t -= 1)) * Math.sin((t - s) * (2 * Math.PI) / p) * 0.5 + 1
-		},
-		inBack(t, s) {
-			if (s == undefined) s = 1.70158
-			return 1 * t * t * ((s + 1) * t - s)
-		},
-		outBack(t, s) {
-			if (s == undefined) s = 1.70158
-			return 1 * ((t = t / 1 - 1) * t * ((s + 1) * t + s) + 1)
-		},
-		inOutBack(t, s) {
-			if (s == undefined) s = 1.70158
-			if ((t /= 1 / 2) < 1) return 1 / 2 * (t * t * (((s *= (1.525)) + 1) * t - s))
-			return 1 / 2 * ((t -= 2) * t * (((s *= (1.525)) + 1) * t + s) + 2)
-		},
-		outBounce(t) { return 1 - this.inBounce(1 - t); },
-		inBounce(t) {
-			if ((t /= 1) < (1 / 2.75)) {
-				return (7.5625 * t * t)
-			} else if (t < (2 / 2.75)) {
-				return (7.5625 * (t -= (1.5 / 2.75)) * t + .75)
-			} else if (t < (2.5 / 2.75)) {
-				return (7.5625 * (t -= (2.25 / 2.75)) * t + .9375)
-			} else {
-				return (7.5625 * (t -= (2.625 / 2.75)) * t + .984375)
-			}
-		},
-		inOutBounce(t) {
-			if (t < 1 / 2) return this.inBounce(t * 2) * 0.5
-			return this.outBounce(t * 2 - 1) * 0.5 + 0.5
-		},
-		cubicBezier(mX1, mY1, mX2, mY2) {
-			/*
-			 * https://github.com/gre/bezier-easing
-			 * BezierEasing - use bezier curve for transition easing function
-			 * by Gaëtan Renaudeau 2014 - 2015 – MIT License
-			 */
-
-			// These values are established by empiricism with tests (tradeoff: performance VS precision)
-			var NEWTON_ITERATIONS = 4
-			var NEWTON_MIN_SLOPE = 0.001
-			var SUBDIVISION_PRECISION = 0.0000001
-			var SUBDIVISION_MAX_ITERATIONS = 10
-
-			var kSplineTableSize = 11
-			var kSampleStepSize = 1.0 / (kSplineTableSize - 1.0)
-
-			var float32ArraySupported = typeof Float32Array === 'function'
-
-			function A(aA1, aA2) { return 1.0 - 3.0 * aA2 + 3.0 * aA1; }
-			function B(aA1, aA2) { return 3.0 * aA2 - 6.0 * aA1; }
-			function C(aA1) { return 3.0 * aA1; }
-
-			// Returns x(t) given t, x1, and x2, or y(t) given t, y1, and y2.
-			function calcBezier(aT, aA1, aA2) { return ((A(aA1, aA2) * aT + B(aA1, aA2)) * aT + C(aA1)) * aT; }
-
-			// Returns dx/dt given t, x1, and x2, or dy/dt given t, y1, and y2.
-			function getSlope(aT, aA1, aA2) { return 3.0 * A(aA1, aA2) * aT * aT + 2.0 * B(aA1, aA2) * aT + C(aA1); }
-
-			function binarySubdivide(aX, aA, aB, mX1, mX2) {
-				var currentX, currentT, i = 0
-				do {
-					currentT = aA + (aB - aA) / 2.0
-					currentX = calcBezier(currentT, mX1, mX2) - aX
-					if (currentX > 0.0) {
-						aB = currentT
-					} else {
-						aA = currentT
-					}
-				} while (Math.abs(currentX) > SUBDIVISION_PRECISION && ++i < SUBDIVISION_MAX_ITERATIONS)
-				return currentT
-			}
-
-			function newtonRaphsonIterate(aX, aGuessT, mX1, mX2) {
-				for (var i = 0; i < NEWTON_ITERATIONS; ++i) {
-					var currentSlope = getSlope(aGuessT, mX1, mX2)
-					if (currentSlope === 0.0) {
-						return aGuessT
-					}
-					var currentX = calcBezier(aGuessT, mX1, mX2) - aX
-					aGuessT -= currentX / currentSlope
-				}
-				return aGuessT
-			}
-
-			function LinearEasing(x) {
-				return x
-			}
-
-			/* Esta función regresa una nueva función */
-			function bezier(mX1, mY1, mX2, mY2) {
-				if (!(0 <= mX1 && mX1 <= 1 && 0 <= mX2 && mX2 <= 1)) {
-					throw new Error('bezier x values must be in [0, 1] range + ')
-				}
-
-				if (mX1 === mY1 && mX2 === mY2) {
-					return LinearEasing
-				}
-
-				// Precompute samples table
-				var sampleValues = float32ArraySupported ? new Float32Array(kSplineTableSize) : new Array(kSplineTableSize)
-				for (var i = 0; i < kSplineTableSize; ++i) {
-					sampleValues[i] = calcBezier(i * kSampleStepSize, mX1, mX2)
-				}
-
-				function getTForX(aX) {
-					var intervalStart = 0.0
-					var currentSample = 1
-					var lastSample = kSplineTableSize - 1
-
-					for (; currentSample !== lastSample && sampleValues[currentSample] <= aX; ++currentSample) {
-						intervalStart += kSampleStepSize
-					}
-					--currentSample
-
-					// Interpolate to provide an initial guess for t
-					var dist = (aX - sampleValues[currentSample]) / (sampleValues[currentSample + 1] - sampleValues[currentSample])
-					var guessForT = intervalStart + dist * kSampleStepSize
-
-					var initialSlope = getSlope(guessForT, mX1, mX2)
-					if (initialSlope >= NEWTON_MIN_SLOPE) {
-						return newtonRaphsonIterate(aX, guessForT, mX1, mX2)
-					} else if (initialSlope === 0.0) {
-						return guessForT
-					} else {
-						return binarySubdivide(aX, intervalStart, intervalStart + kSampleStepSize, mX1, mX2)
-					}
-				}
-
-				return function BezierEasing(x) {
-					// Because JavaScript number are imprecise, we should guarantee the extremes are right.
-					if (x === 0) {
-						return 0
-					}
-					if (x === 1) {
-						return 1
-					}
-					return calcBezier(getTForX(x), mY1, mY2)
-				}
-			}
-
-			return bezier(mX1, mY1, mX2, mY2)
-		}
-	}
-
 	/* Duration */
 	get duration() {
 		return this._.duration
@@ -828,11 +614,224 @@ class Polimot {
 
 }
 
+Polimot.easing = {
+	linear: t => t,
+	inQuad: t => t * t,
+	outQuad: t => t * (2 - t),
+	inOutQuad: t => t < .5 ? 2 * t * t : -1 + (4 - 2 * t) * t,
+	inCubic: t => t * t * t,
+	outCubic: t => (--t) * t * t + 1,
+	inOutCubic(t) { return t < .5 ? 4 * t * t * t : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1; },
+	inQuart(t) { return t * t * t * t; },
+	outQuart(t) { return 1 - (--t) * t * t * t; },
+	inOutQuart(t) { return t < .5 ? 8 * t * t * t * t : 1 - 8 * (--t) * t * t * t; },
+	inQuint(t) { return t * t * t * t * t; },
+	outQuint(t) { return 1 + (--t) * t * t * t * t; },
+	inOutQuint(t) { return t < .5 ? 16 * t * t * t * t * t : 1 + 16 * (--t) * t * t * t * t; },
+	inSine(t) { return -1 * Math.cos(t / 1 * (Math.PI * 0.5)) + 1; },
+	outSine(t) { return Math.sin(t / 1 * (Math.PI * 0.5)); },
+	inOutSine(t) { return -1 / 2 * (Math.cos(Math.PI * t) - 1); },
+	inExpo(t) { return (t == 0) ? 0 : Math.pow(2, 10 * (t - 1)); },
+	outExpo(t) { return (t == 1) ? 1 : (-Math.pow(2, -10 * t) + 1); },
+	inOutExpo(t) {
+		if (t == 0) return 0
+		if (t == 1) return 1
+		if ((t /= 1 / 2) < 1) return 1 / 2 * Math.pow(2, 10 * (t - 1))
+		return 1 / 2 * (-Math.pow(2, -10 * --t) + 2)
+	},
+	inCirc(t) { return -1 * (Math.sqrt(1 - t * t) - 1); },
+	outCirc(t) { return Math.sqrt(1 - (t = t - 1) * t); },
+	inOutCirc(t) {
+		if ((t /= 1 / 2) < 1) return -1 / 2 * (Math.sqrt(1 - t * t) - 1)
+		return 1 / 2 * (Math.sqrt(1 - (t -= 2) * t) + 1)
+	},
+	outElastic(t) {
+		var s = 1.70158
+		var p = 0
+		var a = 1
+		if (t == 0) return 0
+		if (t == 1) return 1
+		if (!p) p = 0.3
+		if (a < 1) {
+			a = 1
+			var s = p / 4
+		} else var s = p / (2 * Math.PI) * Math.asin(1 / a)
+		return -(a * Math.pow(2, 10 * (t -= 1)) * Math.sin((t - s) * (2 * Math.PI) / p))
+	},
+	inElastic(t) {
+		var s = 1.70158
+		var p = 0
+		var a = 1
+		if (t == 0) return 0
+		if (t == 1) return 1
+		if (!p) p = 0.3
+		if (a < 1) {
+			a = 1
+			var s = p / 4
+		} else var s = p / (2 * Math.PI) * Math.asin(1 / a)
+		return a * Math.pow(2, -10 * t) * Math.sin((t - s) * (2 * Math.PI) / p) + 1
+	},
+	inOutElastic(t) {
+		var s = 1.70158
+		var p = 0
+		var a = 1
+		if (t == 0) return 0
+		if ((t /= 1 / 2) == 2) return 1
+		if (!p) p = (0.3 * 1.5)
+		if (a < 1) {
+			a = 1
+			var s = p / 4
+		} else var s = p / (2 * Math.PI) * Math.asin(1 / a)
+		if (t < 1) return -.5 * (a * Math.pow(2, 10 * (t -= 1)) * Math.sin((t - s) * (2 * Math.PI) / p))
+		return a * Math.pow(2, -10 * (t -= 1)) * Math.sin((t - s) * (2 * Math.PI) / p) * 0.5 + 1
+	},
+	inBack(t, s) {
+		if (s == undefined) s = 1.70158
+		return 1 * t * t * ((s + 1) * t - s)
+	},
+	outBack(t, s) {
+		if (s == undefined) s = 1.70158
+		return 1 * ((t = t / 1 - 1) * t * ((s + 1) * t + s) + 1)
+	},
+	inOutBack(t, s) {
+		if (s == undefined) s = 1.70158
+		if ((t /= 1 / 2) < 1) return 1 / 2 * (t * t * (((s *= (1.525)) + 1) * t - s))
+		return 1 / 2 * ((t -= 2) * t * (((s *= (1.525)) + 1) * t + s) + 2)
+	},
+	outBounce(t) { return 1 - this.inBounce(1 - t); },
+	inBounce(t) {
+		if ((t /= 1) < (1 / 2.75)) {
+			return (7.5625 * t * t)
+		} else if (t < (2 / 2.75)) {
+			return (7.5625 * (t -= (1.5 / 2.75)) * t + .75)
+		} else if (t < (2.5 / 2.75)) {
+			return (7.5625 * (t -= (2.25 / 2.75)) * t + .9375)
+		} else {
+			return (7.5625 * (t -= (2.625 / 2.75)) * t + .984375)
+		}
+	},
+	inOutBounce(t) {
+		if (t < 1 / 2) return this.inBounce(t * 2) * 0.5
+		return this.outBounce(t * 2 - 1) * 0.5 + 0.5
+	},
+	cubicBezier(mX1, mY1, mX2, mY2) {
+		/*
+		 * https://github.com/gre/bezier-easing
+		 * BezierEasing - use bezier curve for transition easing function
+		 * by Gaëtan Renaudeau 2014 - 2015 – MIT License
+		 */
+
+		// These values are established by empiricism with tests (tradeoff: performance VS precision)
+		var NEWTON_ITERATIONS = 4
+		var NEWTON_MIN_SLOPE = 0.001
+		var SUBDIVISION_PRECISION = 0.0000001
+		var SUBDIVISION_MAX_ITERATIONS = 10
+
+		var kSplineTableSize = 11
+		var kSampleStepSize = 1.0 / (kSplineTableSize - 1.0)
+
+		var float32ArraySupported = typeof Float32Array === 'function'
+
+		function A(aA1, aA2) { return 1.0 - 3.0 * aA2 + 3.0 * aA1; }
+		function B(aA1, aA2) { return 3.0 * aA2 - 6.0 * aA1; }
+		function C(aA1) { return 3.0 * aA1; }
+
+		// Returns x(t) given t, x1, and x2, or y(t) given t, y1, and y2.
+		function calcBezier(aT, aA1, aA2) { return ((A(aA1, aA2) * aT + B(aA1, aA2)) * aT + C(aA1)) * aT; }
+
+		// Returns dx/dt given t, x1, and x2, or dy/dt given t, y1, and y2.
+		function getSlope(aT, aA1, aA2) { return 3.0 * A(aA1, aA2) * aT * aT + 2.0 * B(aA1, aA2) * aT + C(aA1); }
+
+		function binarySubdivide(aX, aA, aB, mX1, mX2) {
+			var currentX, currentT, i = 0
+			do {
+				currentT = aA + (aB - aA) / 2.0
+				currentX = calcBezier(currentT, mX1, mX2) - aX
+				if (currentX > 0.0) {
+					aB = currentT
+				} else {
+					aA = currentT
+				}
+			} while (Math.abs(currentX) > SUBDIVISION_PRECISION && ++i < SUBDIVISION_MAX_ITERATIONS)
+			return currentT
+		}
+
+		function newtonRaphsonIterate(aX, aGuessT, mX1, mX2) {
+			for (var i = 0; i < NEWTON_ITERATIONS; ++i) {
+				var currentSlope = getSlope(aGuessT, mX1, mX2)
+				if (currentSlope === 0.0) {
+					return aGuessT
+				}
+				var currentX = calcBezier(aGuessT, mX1, mX2) - aX
+				aGuessT -= currentX / currentSlope
+			}
+			return aGuessT
+		}
+
+		function LinearEasing(x) {
+			return x
+		}
+
+		/* Esta función regresa una nueva función */
+		function bezier(mX1, mY1, mX2, mY2) {
+			if (!(0 <= mX1 && mX1 <= 1 && 0 <= mX2 && mX2 <= 1)) {
+				throw new Error('bezier x values must be in [0, 1] range + ')
+			}
+
+			if (mX1 === mY1 && mX2 === mY2) {
+				return LinearEasing
+			}
+
+			// Precompute samples table
+			var sampleValues = float32ArraySupported ? new Float32Array(kSplineTableSize) : new Array(kSplineTableSize)
+			for (var i = 0; i < kSplineTableSize; ++i) {
+				sampleValues[i] = calcBezier(i * kSampleStepSize, mX1, mX2)
+			}
+
+			function getTForX(aX) {
+				var intervalStart = 0.0
+				var currentSample = 1
+				var lastSample = kSplineTableSize - 1
+
+				for (; currentSample !== lastSample && sampleValues[currentSample] <= aX; ++currentSample) {
+					intervalStart += kSampleStepSize
+				}
+				--currentSample
+
+				// Interpolate to provide an initial guess for t
+				var dist = (aX - sampleValues[currentSample]) / (sampleValues[currentSample + 1] - sampleValues[currentSample])
+				var guessForT = intervalStart + dist * kSampleStepSize
+
+				var initialSlope = getSlope(guessForT, mX1, mX2)
+				if (initialSlope >= NEWTON_MIN_SLOPE) {
+					return newtonRaphsonIterate(aX, guessForT, mX1, mX2)
+				} else if (initialSlope === 0.0) {
+					return guessForT
+				} else {
+					return binarySubdivide(aX, intervalStart, intervalStart + kSampleStepSize, mX1, mX2)
+				}
+			}
+
+			return function BezierEasing(x) {
+				// Because JavaScript number are imprecise, we should guarantee the extremes are right.
+				if (x === 0) {
+					return 0
+				}
+				if (x === 1) {
+					return 1
+				}
+				return calcBezier(getTForX(x), mY1, mY2)
+			}
+		}
+
+		return bezier(mX1, mY1, mX2, mY2)
+	}
+}
+
 /* Crea nuevas funciones en base a cubic-bezier */
 Polimot.easing.softInElastic = Polimot.easing.cubicBezier(.08, 1.07, .55, 1.26)
 Polimot.easing.softOutElastic = Polimot.easing.cubicBezier(.45, -0.26, .8, -0.07)
 
 Polimot.definitionTypes = ['attrs', 'props', 'style']
-Polimot.transformFunctions = ['matrix', 'translate', 'translateX', 'translateY', 'scale', 'scaleX', 'scaleY', 'rotate', 'skew', 'skewX', 'skewY', 'matrix3D', 'translate3D', 'translateZ', 'scale3d',
-	'scaleZ', 'rotate3d', 'rotateX', 'rotateY', 'rotateZ', 'perspective']
+Polimot.transformFunctions = ['matrix', 'translate', 'translateX', 'translateY', 'scale', 'scaleX', 'scaleY', 'rotate', 'skew', 'skewX', 'skewY', 'matrix3D', 'translate3D', 'translateZ', 'scale3d', 'scaleZ', 'rotate3d', 'rotateX', 'rotateY', 'rotateZ', 'perspective']
 Polimot.clipPathFunctions = ['inset', 'circle', 'polygon']
