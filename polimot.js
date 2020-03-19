@@ -488,7 +488,8 @@ class Polimot {
 		this._.setFrame = currentTime => {
 			this._.timelines.forEach(timeline => {
 				let currentTimeInTimeline
-				let toExecute = []
+				let toExecuteBeforeDraw = []
+				let toExecuteAfterDraw = []
 				let param = {
 					target: timeline.target,
 					currentTime,
@@ -502,8 +503,8 @@ class Polimot {
 					} else if (timeline.endTime <= currentTime && (!timeline.terminated || this._.status !== 'playing')) {
 						currentTimeInTimeline = timeline.duration
 						param.subTime = currentTimeInTimeline
-						if (this._.status === 'playing' && typeof timeline.begin === 'function' && !timeline.started) toExecute.push(timeline.begin)
-						if (this._.status === 'playing' && typeof timeline.complete === 'function') toExecute.push(timeline.complete)
+						if (this._.status === 'playing' && typeof timeline.begin === 'function' && !timeline.started) toExecuteBeforeDraw.push(timeline.begin)
+						if (this._.status === 'playing' && typeof timeline.complete === 'function') toExecuteAfterDraw.push(timeline.complete)
 						timeline.terminated = true
 						timeline.started = true
 					}
@@ -514,8 +515,8 @@ class Polimot {
 					} else if (timeline.startTime >= currentTime && (!timeline.terminated || this._.status !== 'playing')) {
 						currentTimeInTimeline = 0
 						param.subTime = currentTimeInTimeline
-						if (this._.status === 'playing' && typeof timeline.complete === 'function' && !timeline.started) toExecute.push(timeline.complete)
-						if (this._.status === 'playing' && typeof timeline.begin === 'function') toExecute.push(timeline.begin)
+						if (this._.status === 'playing' && typeof timeline.complete === 'function' && !timeline.started) toExecuteAfterDraw.push(timeline.complete)
+						if (this._.status === 'playing' && typeof timeline.begin === 'function') toExecuteBeforeDraw.push(timeline.begin)
 						timeline.terminated = true
 						timeline.started = true
 					}
@@ -526,20 +527,19 @@ class Polimot {
 					if (this._.status === 'playing') {
 						if (!timeline.started) {
 							if (this._.direction !== 'reverse' && typeof timeline.begin === 'function') {
-								toExecute.push(timeline.begin)
+								toExecuteBeforeDraw.push(timeline.begin)
 							} else if (this._.direction === 'reverse' && typeof timeline.complete === 'function') {
-								toExecute.push(timeline.complete)
+								toExecuteAfterDraw.push(timeline.complete)
 							}
 						}
-						if (typeof timeline.update === 'function') toExecute.push(timeline.update)
+						if (typeof timeline.update === 'function') toExecuteAfterDraw.push(timeline.update)
 						timeline.started = true
 					}
 				}
 				/* Si se ha logrado identificar el tiempo dentro del timeline, se dibuja el frame del timeline. */
+				toExecuteBeforeDraw.forEach(toDo => toDo(param))
 				if (currentTimeInTimeline !== undefined) this._.drawFrame(currentTimeInTimeline, timeline)
-				toExecute.forEach(function (toDo) {
-					toDo(param)
-				})
+				toExecuteAfterDraw.forEach(toDo => toDo(param))
 			})
 		}
 
