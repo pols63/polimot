@@ -218,6 +218,15 @@ class Polimot {
 						}
 					}
 					break
+				case 'cssVars':
+					if (target.constructor.name.search(/^HTML|SVG[a-zA-Z]*Element$/) > -1) {
+						let styles = getComputedStyle(target)
+						if (styles.getPropertyValue(name)) {
+							value = Number(styles[name].match(/^[+-]?[0-9]*\.?[0-9]+/g)[0])
+							if (isNaN(value)) value = 0
+						}
+					}
+					break
 			}
 			return value || 0
 		}
@@ -385,6 +394,7 @@ class Polimot {
 					attrs: timeline.attrs ? { ...timeline.attrs } : null,
 					props: timeline.props ? { ...timeline.props } : null,
 					style: timeline.style ? { ...timeline.style } : null,
+					cssVars: timeline.cssVars ? { ...timeline.cssVars } : null,
 					steps: Number(timeline.steps) || 0,
 				}
 				timelineTemplate.endTime = timelineTemplate.startTime + timelineTemplate.duration
@@ -476,6 +486,9 @@ class Polimot {
 							} else {
 								timeline.target.style[definitionName] = finalValue
 							}
+							break
+						case 'cssVars':
+							timeline.target.style.setProperty(definitionName, finalValue)
 							break
 					}
 				}
@@ -612,6 +625,10 @@ class Polimot {
 		this._.compile()
 	}
 
+
+	toggleDirection() {
+		this.direction = this.direction === 'normal' ? 'reverse' : 'normal'
+	}
 }
 
 Polimot.easing = {

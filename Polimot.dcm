@@ -1,0 +1,25 @@
+{
+ "title": "Polimot",
+ "delta": [],
+ "content": [
+  {
+   "title": "Objetos animables",
+   "content": [
+    {
+     "title": "Variables CSS",
+     "content": [],
+     "delta": [
+      {
+       "insert": "Las variables CSS deberán ser especificadas tal cual se escriben en el entorno CSS.\n"
+      }
+     ]
+    }
+   ],
+   "delta": [
+    {
+     "insert": "Son animables los atributos, propiedades, estilos y variables CSS.\n"
+    }
+   ]
+  }
+ ]
+}
