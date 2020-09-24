@@ -849,6 +849,6 @@ Polimot.easing = {
 Polimot.easing.softInElastic = Polimot.easing.cubicBezier(.08, 1.07, .55, 1.26)
 Polimot.easing.softOutElastic = Polimot.easing.cubicBezier(.45, -0.26, .8, -0.07)
 
-Polimot.definitionTypes = ['attrs', 'props', 'style']
+Polimot.definitionTypes = ['attrs', 'props', 'style', 'cssVars']
 Polimot.transformFunctions = ['matrix', 'translate', 'translateX', 'translateY', 'scale', 'scaleX', 'scaleY', 'rotate', 'skew', 'skewX', 'skewY', 'matrix3D', 'translate3D', 'translateZ', 'scale3d', 'scaleZ', 'rotate3d', 'rotateX', 'rotateY', 'rotateZ', 'perspective']
 Polimot.clipPathFunctions = ['inset', 'circle', 'polygon']
