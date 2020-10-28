@@ -62,9 +62,18 @@
 	let anim2 = new Polimot({
 		target: 'div',
 		style: {
-			backgroundColor: ['#23546500', '#F1ADc3ff']
+			// backgroundColor: ['#23546500', '#F1ADc3ff']
+
+			width: [300, '?px', 200, '?em']
+			// width: [300, 200, n => `${n}px`]
+			// width: {
+			// 	easing: 'inElastic',
+			// 	values: [100, 300],
+			// 	result: n => `${n}px`
+			// }
 		},
-		steps: 5,
+		// steps: 5,
+		stagger: 500,
 		begin: () => console.log('a'),
 		complete: () => console.log('b'),
 	})

@@ -53,16 +53,150 @@ La función constructora puede recibir uno o más parámetros. Cada uno de ellos
 
 * **delay (opcional) (por defecto es igual a 0):** Tiempo en milisegundos en que la animación demorará en iniciarse. Este valor se sumará a `stagger` para cada uno de los elementos.
 
-* **begin (opcional) (por defecto es undefined):** Callback que se ejecuta cuando se inicia la animación por cada elemento de configuración. Si `target` da como resultado más de un elemento a animar, el callback se ejecutará una vez por cada uno de esos elementos.
-
-* **complete (opcional) (por defecto es undefined):** Callback que se ejecuta cuando la animación ha terminado por cada elemento de configuración. Igual que `begin`, si target da como resultado más de un elemento a animar, el callback se ejecutará una vez por cada uno de esos elementos. Si la animación es pausada antes de completar la animación de un elemento, el callback no se ejecutará.
-
-* **update (opcional) (por defecto es undefined):** Callback que se ejecuta por cada frame de la animación. Polimot utiliza internamente la función `requestAnimationFrame` para realizar el renderizado del siguiente frame, haciendo que la animación no se ejecuté si la página no está visible o el navegador está minimizado, por lo que este callback no se ejecutará en esos casos.
-
 * **props, attrs, style, cssVars (requerido al menos uno de ellos):** Objetos cuyas propiedades apuntan a las propiedades del elemento a animar. Cada propiedad es un intervalo. La construcción de estos objetos se verá más adelante.
 
-### props, attrs, style, cssVars
+* **startTime (opcional) (por defecto es undefined):** Indica el tiempo en milisegundos en el que iniciará la animación. A diferencia de `delay`, cuando se pasan al constructor varios objetos de configuración, este parámetro indicará en la línea de tiempo global, en qué momento este objeto será tomado en cuenta, a partir de ese momento, la animación ocurrirá luego del tiempo indicado en `delay`.
 
-Propiedades del elemento en animación. Las propiedades indicadas aquí se actualizarán en cada frame cuando la animación este corriendo.
+* **begin (opcional) (por defecto es undefined):** Callback que se ejecuta cuando se inicia la animación por cada elemento de configuración. Si `target` da como resultado más de un elemento a animar, el callback se ejecutará una vez por cada uno de esos elementos.
 
+- **complete (opcional) (por defecto es undefined):** Callback que se ejecuta cuando la animación ha terminado por cada elemento de configuración. Igual que `begin`, si target da como resultado más de un elemento a animar, el callback se ejecutará una vez por cada uno de esos elementos. Si la animación es pausada antes de completar la animación de un elemento, el callback no se ejecutará.
 
+- **update (opcional) (por defecto es undefined):** Callback que se ejecuta por cada frame de la animación. Polimot utiliza internamente la función `requestAnimationFrame` para realizar el renderizado del siguiente frame, haciendo que la animación no se ejecuté si la página no está visible o el navegador está minimizado, por lo que este callback no se ejecutará en esos casos.
+
+Cuando se pasan varios objetos de configuración, cada uno de ellos se ejecutará luego que el primero acabe.
+
+## style, props, attrs y cssVars
+
+Cada uno de estas propiedades dentro de un objeto de configuración anima una cualidad diferente en el elemento seleccionado en `target`:
+
+* **style:** Anima propiedades de estilo, aplicable únicamente a los elementos HTML. Las propiedades indicadas dentro deben ser escritas tal como son entregadas por la función `getComputedStyle()`.
+
+* **props:** Anima las propiedades de un objeto.
+
+* **attrs:** Anima atributos de eqitueta, aplicable únicamente a los elementos HTML.
+
+* **cssVars:** Anima variables de estilo CSS, aplicable únicamente a los elementos HTML. Las propiedades indicadas dentro deben ser escritas tal cual como variables CSS, con `--` por delante.
+
+## Tipos de valor para las categorías animables
+
+Las propiedades anidadas dentro de `style`, `props`, `attrs` y `cssVars` pueden ser de tres tipos:
+
+* Número.
+
+* Arreglo.
+
+* Objeto de configuración.
+
+## Valor de propiedad como número
+
+Si las propiedades anidadas en `style`, `props`, `attrs` y `cssVars` son de tipo número, tal valor será el establecido al final de la animación.
+
+Ejemplo:
+
+Para el elemento:
+
+```html
+<div></div>
+```
+
+```javascript
+const anim = new Polimot({
+    target: 'div',
+    style: {
+        opacity: 0
+    }
+})
+anim.play()
+// La animación modificará el atributo CSS 'opacity' desde el que tenga actualmente hasta 0.
+```
+
+El ejemplo anterior funciona bien para atributos que sean de tipo número, pero para aquellos atributos que requieren una unidad, la animación no se apreciará.
+
+```javascript
+const anim = new Polimot({
+    target: 'div',
+    style: {
+        width: 0
+    }
+})
+anim.play()
+// El div no cambiará de ancho, debido a que en CSS, los atributos de medida requieren se especifique una unidad.
+```
+
+Para este caso, se requiere utilizar valores de tipo arreglo.
+
+## Valor de propiedad como arreglo
+
+Si las propiedades anidadas en `style`, `props`, `attrs` y `cssVars` son de tipo arreglo, ocurrirá lo siguiente:
+
+### 1. Se tomarán todos los elementos numéricos. Éstos actuarán como valores clave para animación.
+
+Ejemplo:
+
+Para el elemento:
+
+```html
+<div></div>
+```
+
+```javascript
+// Volviendo con 'opacity'
+const anim = new Polimot({
+    target: 'div',
+    style: {
+        opacity: [0, 1, 0.5, 1]
+    }
+})
+anim.play()
+// La animación modificará el atributo CSS 'opacity' desde 0 hasta 1, luego hasta 0.5 y finalmente a 1.
+```
+
+Tenga en cuenta que en esta ocasión, no se tomará en cuenta valor de `opacity` encontrado en el elemento, sino que será sobreescrito al primer valor del arreglo.
+
+### 2. Si existe algún elemento de tipo cadena, ésta será utilizada como una plantilla para colocar el valor al atributo en animación.
+
+La plantilla debe contener el caracter `?` que será reemplazado por el valor resultante de la animación.
+
+Ejemplo:
+
+Para el elemento:
+
+```html
+<div></div>
+```
+
+```javascript
+// Volviendo con 'opacity'
+const anim = new Polimot({
+    target: 'div',
+    style: {
+        width: [0, 100, 50, '?px']
+    }
+})
+anim.play()
+// La animación modificará el atributo CSS 'width' desde 0px hasta 100px, luego hasta 50px.
+```
+
+Esto será lo ideal para indicar las unidades de animación:
+
+```javascript
+const anim = new Polimot({
+    target: 'div',
+    style: {
+        fontSize: [1, 2, '?em']
+    }
+})
+anim.play()
+```
+
+El valor de tipo cadena puede estar en cualquier posición del arreglo. Si hay más de un elemento de tipo plantilla, sólo será tomado en cuenta el último:
+
+```javascript
+const anim = new Polimot({
+    target: 'div',
+    style: {
+        fontSize: [1, '?em', 2, '?px', 3] // idéntico a [1, 2, 3, '?px']
+    }
+})
+anim.play()
+```
