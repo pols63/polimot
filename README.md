@@ -10,7 +10,7 @@ Importe el script utilizando la etiqueta:
 <script src="polimot.js"></script>
 ```
 
-### Animando un elemento HTML
+## Animando un elemento HTML
 
 ```javascript
 let anim = new Polimot({
@@ -51,10 +51,18 @@ La función constructora puede recibir uno o más parámetros. Cada uno de ellos
 
 * **steps (opcional) (por defecto igual a 0):** Si se pasa un número mayor a 0, la animación tendrá una cantidad igual en saltos.
 
-* **begin (opcional) (por defecto es undefined):** Callback que se ejecuta cuando se inicia la animación por cada elemento de configuración. Si target da como resultado más de un elemento a animar, el callback se ejecutará una vez por cada uno de esos elementos.
+* **delay (opcional) (por defecto es igual a 0):** Tiempo en milisegundos en que la animación demorará en iniciarse. Este valor se sumará a `stagger` para cada uno de los elementos.
+
+* **begin (opcional) (por defecto es undefined):** Callback que se ejecuta cuando se inicia la animación por cada elemento de configuración. Si `target` da como resultado más de un elemento a animar, el callback se ejecutará una vez por cada uno de esos elementos.
 
 * **complete (opcional) (por defecto es undefined):** Callback que se ejecuta cuando la animación ha terminado por cada elemento de configuración. Igual que `begin`, si target da como resultado más de un elemento a animar, el callback se ejecutará una vez por cada uno de esos elementos. Si la animación es pausada antes de completar la animación de un elemento, el callback no se ejecutará.
 
-* delay (opcional) (por defecto es igual a 0): Tiempo en milisegundos en que la animación demorará en iniciarse.
+* **update (opcional) (por defecto es undefined):** Callback que se ejecuta por cada frame de la animación. Polimot utiliza internamente la función `requestAnimationFrame` para realizar el renderizado del siguiente frame, haciendo que la animación no se ejecuté si la página no está visible o el navegador está minimizado, por lo que este callback no se ejecutará en esos casos.
+
+* **props, attrs, style, cssVars (requerido al menos uno de ellos):** Objetos cuyas propiedades apuntan a las propiedades del elemento a animar. Cada propiedad es un intervalo. La construcción de estos objetos se verá más adelante.
+
+### props, attrs, style, cssVars
+
+Propiedades del elemento en animación. Las propiedades indicadas aquí se actualizarán en cada frame cuando la animación este corriendo.
 
 
