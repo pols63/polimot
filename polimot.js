@@ -1,86 +1,113 @@
-class Color {
-
-	get red() {
-		return this._.red
-	}
-
-	set red(value) {
-		value = Number(value)
-		if (isNaN(value)) value = 0
-		this._.red = value
-	}
-
-	get green() {
-		return this._.green
-	}
-
-	set green(value) {
-		value = Number(value)
-		if (isNaN(value)) value = 0
-		this._.green = value
-	}
-
-	get blue() {
-		return this._.blue
-	}
-
-	set blue(value) {
-		value = Number(value)
-		if (isNaN(value)) value = 0
-		this._.blue = value
-	}
-
-	static change(colorBegin, colorDest, method) {
-		let color = new Color()
-		if (typeof method !== 'function') {
-			color.red = colorDest.red
-			color.green = colorDest.green
-			color.blue = colorDest.blue
-		} else {
-			color.red = Math.round(method(colorBegin.red, colorDest.red))
-			color.green = Math.round(method(colorBegin.green, colorDest.green))
-			color.blue = Math.round(method(colorBegin.blue, colorDest.blue))
-		}
-		return color
-	}
-
-	static zeroPad(number) {
-		return Array(Math.max(2 - number.toString().length + 1, 0)).join('0') + number
-	}
-
-	constructor(value) {
-		this._ = {
-			red: 0,
-			green: 0,
-			blue: 0
-		}
-
-		if (!value || value.search(/^#[A-Fa-f0-9]{6}$/) === -1) return
-		value = parseInt('0x' + value.substr(1))
-		this._.red = Math.floor(value / (256 * 256))
-		this._.green = Math.floor((value % (256 * 256)) / 256)
-		this._.blue = (value % (256 * 256)) % 256
-
-	}
-
-	change(colorDest, method) {
-		if (typeof method !== 'function') {
-			this._.red = colorDest.red
-			this._.green = colorDest.green
-			this._.blue = colorDest.blue
-		} else {
-			this._.red = method(this._.red, colorDest.red)
-			this._.green = method(this._.green, colorDest.green)
-			this._.blue = method(this._.blue, colorDest.blue)
-		}
-	}
-
-	toString() {
-		return `#${Color.zeroPad(this._.red.toString(16).toUpperCase())}${Color.zeroPad(this._.green.toString(16).toUpperCase())}${Color.zeroPad(this._.blue.toString(16).toUpperCase())}`
-	}
-}
-
 class Polimot {
+
+	/* Subclase de color */
+	static Color = class Color {
+
+		static change(colorBegin, colorDest, method) {
+			const color = new Color
+			if (typeof method !== 'function') {
+				color.red = colorDest.red
+				color.green = colorDest.green
+				color.blue = colorDest.blue
+				color.alpha = colorDest.alpha
+			} else {
+				color.red = Math.round(method(colorBegin.red, colorDest.red))
+				color.green = Math.round(method(colorBegin.green, colorDest.green))
+				color.blue = Math.round(method(colorBegin.blue, colorDest.blue))
+				color.alpha = Math.round(method(colorBegin.alpha, colorDest.alpha))
+			}
+			return color
+		}
+
+		constructor(value) {
+			const values = {
+				red: 0,
+				green: 0,
+				blue: 0,
+				alpha: 255
+			}
+			if (value) {
+				if (typeof value === 'string') {
+					value = value.trim()
+					if (value === '') throw new Error(`Valor de color no válido.`)
+					const parts = value.match(/^#([a-f0-9]{2})([a-f0-9]{2})([a-f0-9]{2})([a-f0-9]{0,2})$/i)
+					if (parts) {
+						if (parts[4].length === 1) throw new Error(`Valor de color no válido.`)
+						values.red = parseInt(`0x${parts[1]}`)
+						values.green = parseInt(`0x${parts[2]}`)
+						values.blue = parseInt(`0x${parts[3]}`)
+						if (parts[4]) values.alpha = parseInt(`0x${parts[4]}`)
+					} else {
+						const parts = value.match(/^#([a-f0-9])([a-f0-9])([a-f0-9])([a-f0-9]?)$/i)
+						if (parts) {
+							values.red = parseInt(`0x${parts[1]}${parts[1]}`)
+							values.green = parseInt(`0x${parts[2]}${parts[2]}`)
+							values.blue = parseInt(`0x${parts[3]}${parts[3]}`)
+							if (parts[4]) values.alpha = parseInt(`0x${parts[4]}${parts[4]}`)
+						} else {
+							throw new Error(`Valor de color no vàlido.`)
+						}
+					}
+				} else {
+					throw new Error(`Valor de color no vàlido.`)
+				}
+			}
+
+			Object.defineProperties(this, {
+				red: {
+					set: value => values.red = Math.min(Math.abs(Number(value) || 0), 255),
+					get: () => values.red
+				},
+				green: {
+					set: value => values.green = Math.min(Math.abs(Number(value) || 0), 255),
+					get: () => values.green
+				},
+				blue: {
+					set: value => values.blue = Math.min(Math.abs(Number(value) || 0), 255),
+					get: () => values.blue
+				},
+				alpha: {
+					set: value => values.alpha = Math.min(Math.abs(Number(value) || 0), 255),
+					get: () => values.alpha
+				},
+				toHEX: {
+					value: alphaValue => {
+						const zeroPad = n => Array(Math.max(2 - n.toString().length + 1, 0)).join('0') + n
+						const value = v => zeroPad(v.toString(16).toUpperCase())
+						return `#${value(values.red)}${value(values.green)}${value(values.blue)}${alphaValue ? value(values.alpha) : ''}`
+					}
+				},
+				toHSL: {
+					value: alphaValue => {
+						const round = n => Math.round(n * 10) / 10
+						const p = {
+							red: values.red / 255,
+							green: values.green / 255,
+							blue: values.blue / 255,
+							alpha: values.alpha / 255,
+						}
+						const cMax = Math.max(p.red, p.green, p.blue)
+						const cMin = Math.min(p.red, p.green, p.blue)
+						const d = cMax - cMin
+						let h
+						if (d === 0) {
+							h = 0
+						} else if (cMax === p.red) {
+							h = 60 * (((p.green - p.blue) / d) % 6)
+						} else if (cMax === p.green) {
+							h = 60 * (((p.blue - p.red) / d) + 2)
+						} else if (cMax === p.blue) {
+							h = 60 * (((p.red - p.green) / d) + 4)
+						}
+						if (h < 0) h = h + (360 * Math.ceil(Math.abs(h) / 360))
+						let l = (cMax + cMin) / 2
+						let s = d === 0 ? 0 : (d / (1 - Math.abs(2 * l - 1)))
+						return `hsl${alphaValue ? 'a' : ''}(${h}deg ${round(s * 100)}% ${round(l * 100)}%${alphaValue ? ` / ${p.alpha}` : ''})`
+					}
+				}
+			})
+		}
+	}
 
 	/* Duration */
 	get duration() {
@@ -166,7 +193,7 @@ class Polimot {
 		}
 
 		/* Identifica los target dentro de un timeline, esta función es recursiva, debido a que el target puede ser un arreglo lo que hará necesario iterar en él. */
-		this._.detectTarget = function (source, checkArray = true) {
+		this._.detectTarget = source => {
 			let target = []
 			switch (typeof source) {
 				case 'string':
@@ -191,7 +218,7 @@ class Polimot {
 					break
 			}
 			return target
-		}.bind(this)
+		}
 
 		/* Obtiene el actual valor de terminada propiedad del objetivo entregado como parámetro */
 		this._.getCurrentValue = function (target, definitionType, name) {
@@ -257,12 +284,12 @@ class Polimot {
 			}
 		}.bind(this)
 
-		this._.decodeStringValue = function (value, definitionTemplate, definitionType, target, name, completeValues = false, valueBefore) {
-			if (value.search(/^#[A-Fa-f0-9]{6}$/) > -1) {
+		this._.decodeStringValue = (value, definitionTemplate, definitionType, target, name, completeValues = false, valueBefore) => {
+			if (value.match(/^#([a-f0-9]{6}|[a-f0-9]{8})$/i)) {
 				if (definitionTemplate.isColor === false) return
 				if (definitionTemplate.isColor === undefined) definitionTemplate.isColor = true
-				definitionTemplate.values.push(new Color(value))
-			} if (value.search(/^[+-]=[+-]?[0-9]*\.?[0-9]+$/) > -1) {
+				definitionTemplate.values.push(new Polimot.Color(value))
+			} else if (value.search(/^[+-]=[+-]?[0-9]*\.?[0-9]+$/) > -1) {
 				let sign = value[0] === '+' ? 1 : -1
 				let currentValue = this._.getCurrentValue(target, definitionType, name)
 				if (definitionTemplate.values.length === 0) {
@@ -277,7 +304,7 @@ class Polimot {
 				definitionTemplate.result = (n) => value.replace(/\?/g, n)
 				if (completeValues) definitionTemplate.values = [0, 1]
 			}
-		}.bind(this)
+		}
 
 		this._.detectDefinition = function (definition, definitionType, target, name) {
 			if (!definition) return
@@ -302,7 +329,7 @@ class Polimot {
 							easing: null,
 							result: (n) => n
 						}
-						definition.forEach(function (value, idxValue) {
+						for (const value of definition) {
 							switch (typeof value) {
 								case 'number':
 									if (definitionTemplate.isColor === true) return
@@ -313,14 +340,14 @@ class Polimot {
 									this._.decodeStringValue(value, definitionTemplate, definitionType, target, name, false, definitionTemplate.values[definitionTemplate.values.length - 1])
 									break
 								case 'function':
-									definitionTemplate.values = [0, 1]
+									if (!definitionTemplate.values?.length) definitionTemplate.values = [0, 1]
 									definitionTemplate.isColor = false
 									definitionTemplate.result = value
 									break
 								default:
 									break
 							}
-						}.bind(this))
+						}
 						/* Si hay sólo un elemento en values, se inserta el valor que el objetivo tenga actualmente */
 						if (definitionTemplate.values.length === 1) {
 							definitionTemplate.values.unshift(this._.getCurrentValue(target, definitionType, name))
@@ -361,10 +388,7 @@ class Polimot {
 
 		this._.makeTimeline = (timeline, idxTimeline, reference) => {
 			/* Valida que tenga definida la propiedad target. */
-			if (!timeline.target) {
-				console.log('El timeline ' + idxTimeline + ' no tiene definido correctamente la propiedad "target".')
-				return
-			}
+			if (!timeline.target) throw new Error(`El timeline ${idxTimeline} no tiene definido correctamente la propiedad "target".`)
 			let targets = this._.detectTarget(timeline.target, idxTimeline)
 			if (targets.length === 0) {
 				console.log('No se pudo detectar ningún elemento como "target" para en el timeline ' + idxTimeline + '.')
@@ -434,9 +458,9 @@ class Polimot {
 			let transformDefinitions = []
 			let clipPathDefinitions = []
 			/* Identifica las definiciones */
-			Polimot.definitionTypes.forEach(function (definitionType, idxDefinitionType) {
+			for (const definitionType of Polimot.definitionTypes) {
 				let groupDefinitions = timeline[definitionType]
-				if (!groupDefinitions) return
+				if (!groupDefinitions) continue
 				for (let definitionName in groupDefinitions) {
 					let definition = groupDefinitions[definitionName]
 					/* Altera el valor de percentTime en caso se haya definido la propiedad steps */
@@ -460,10 +484,10 @@ class Polimot {
 					let valueToProcess
 					let finalValue
 					if (definition.isColor) {
-						finalValue = Color.change(prevValue, nextValue, function (prevValue, nextValue) {
+						finalValue = Polimot.Color.change(prevValue, nextValue, function (prevValue, nextValue) {
 							let valueToProcess = (percent - delta * prevIndex) * (definition.values.length - 1) * (nextValue - prevValue) + prevValue
 							return definition.result(valueToProcess)
-						}).toString()
+						}).toHEX(true)
 					} else {
 						valueToProcess = (percent - delta * prevIndex) * (definition.values.length - 1) * (nextValue - prevValue) + prevValue
 						finalValue = definition.result(valueToProcess)
@@ -492,7 +516,7 @@ class Polimot {
 							break
 					}
 				}
-			})
+			}
 			if (transformDefinitions.length > 0) timeline.target.style.transform = transformDefinitions.join(' ')
 			if (clipPathDefinitions.length > 0) timeline.target.style.clipPath = clipPathDefinitions.join(' ')
 		}

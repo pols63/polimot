@@ -1,8 +1,14 @@
 # POLIMOT
 
-Librería de animación para JavaScript. Puede animar propiedades, atributos y estilos tanto de elementos HTML como de objetos.
+Librería de animación para su uso JavaScript. Puede animar propiedades, atributos y estilos tanto de elementos HTML como de objetos.
 
-## Uso
+## Empezar
+
+Importe el script utilizando la etiqueta:
+
+```html
+<script src="polimot.js"></script>
+```
 
 ### Animando un elemento HTML
 
@@ -17,10 +23,10 @@ let anim = new Polimot({
 anim.play()
 ```
 
-Animando un objeto
+## Animando un objeto
 
 ```javascript
-let obj = {qwe: 34}
+let obj = { qwe: 34 }
 let anim = new Polimot({
     target: obj
     props: {
@@ -33,18 +39,22 @@ let anim = new Polimot({
 anim.play()
 ```
 
+## Configurando la animación
 
+La función constructora puede recibir uno o más parámetros. Cada uno de ellos debe ser un objeto de configuración en la que se puede definir las siguientes propiedades:
 
+* **target (requerido):** Es el objeto a animar el cuál puede ser un elemento HTML o cualquier otro objeto. Si se le pasa una cadena, ésta será utilizada para seleccionar elementos HTML por medio de la función `documento.querySelectorAll()` y animarlos a todos. Si se pasa un arreglo, cada elemento será evaluado con el mismo criterio animando a aquellos que sean elementos HTML u objetos, o si es una cadena será utilizada para seleccionar elementos HTML o si es otro arreglo, evaluará sus elementos también. Si el valor pasado no es válido, o si la selección de elementos arrojó una colección de nodos vacía, se arrojará un error.
 
+* **duration (opcional) (por defecto igual a 1000):** Tiempo de duración de la animación en milisegundos.
 
+* **stagger (opcional) (por defecto igual a 0):** Es aplicable cuando `target` luego de ser evaluado da como resultado una colección de elementos, de ser así, la animación para cada elemento empezará con un retraso respecto al anterior según el valor entregado en milisegundos.
 
+* **steps (opcional) (por defecto igual a 0):** Si se pasa un número mayor a 0, la animación tendrá una cantidad igual en saltos.
 
+* **begin (opcional) (por defecto es undefined):** Callback que se ejecuta cuando se inicia la animación por cada elemento de configuración. Si target da como resultado más de un elemento a animar, el callback se ejecutará una vez por cada uno de esos elementos.
 
+* **complete (opcional) (por defecto es undefined):** Callback que se ejecuta cuando la animación ha terminado por cada elemento de configuración. Igual que `begin`, si target da como resultado más de un elemento a animar, el callback se ejecutará una vez por cada uno de esos elementos. Si la animación es pausada antes de completar la animación de un elemento, el callback no se ejecutará.
 
-
-
-
-
-
+* delay (opcional) (por defecto es igual a 0): Tiempo en milisegundos en que la animación demorará en iniciarse.
 
 
