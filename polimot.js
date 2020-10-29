@@ -189,7 +189,8 @@ class Polimot {
 			duration: 0,
 			loop: 0,
 			countingLoop: 0,
-			speed: 1
+			speed: 1,
+			handlers: {}
 		}
 
 		/* Identifica los target dentro de un timeline, esta función es recursiva, debido a que el target puede ser un arreglo lo que hará necesario iterar en él. */
@@ -525,7 +526,7 @@ class Polimot {
 
 		/* Itera en todos los timeline para dibujar sus respectivos frames. */
 		this._.setFrame = currentTime => {
-			this._.timelines.forEach(timeline => {
+			for (const timeline of this._.timelines) {
 				let currentTimeInTimeline
 				let toExecuteBeforeDraw = []
 				let toExecuteAfterDraw = []
@@ -580,7 +581,27 @@ class Polimot {
 				toExecuteBeforeDraw.forEach(toDo => toDo(param))
 				if (currentTimeInTimeline !== undefined) this._.drawFrame(currentTimeInTimeline, timeline)
 				toExecuteAfterDraw.forEach(toDo => toDo(param))
-			})
+			}
+			if (this._.status === 'playing') {
+				const param = {
+					currentTime,
+					direction: this._.direction,
+					status: this._.status
+				}
+				/* Evalúa si se ejecutan los eventos */
+				if (currentTime === 0 && this._.handlers.begin?.length) {
+					param.event = 'begin'
+					for (const handler of this._.handlers.begin) handler(param)
+				}
+				if (currentTime === this._.duration && this._.handlers.complete?.length) {
+					param.event = 'complete'
+					for (const handler of this._.handlers.complete) handler(param)
+				}
+				if (this._.handlers.update?.length) {
+					param.event = 'update'
+					for (const handler of this._.handlers.update) handler(param)
+				}
+			}
 		}
 
 		this._.resetTimelines = () => this._.timelines.forEach(timeline => {
@@ -589,6 +610,30 @@ class Polimot {
 		})
 
 		this._.compile()
+	}
+
+	on(eventName, handler) {
+		if (typeof eventName !== 'string') throw new Error(`El parámetro 'eventName' debe ser de tipo 'string'.`)
+		if (!eventName.trim()) throw new Error(`El parámetro 'eventName' debe un 'string' válido.`)
+		if (typeof handler !== 'function') throw new Error(`El parámetro 'handler' debe ser de tipo 'function'`)
+
+		if (!this._.handlers[eventName]) this._.handlers[eventName] = []
+		this._.handlers[eventName].push(handler)
+	}
+
+	off(eventName, handler) {
+		if (typeof eventName !== 'string') throw new Error(`El parámetro 'eventName' debe ser de tipo 'string'.`)
+		if (!eventName.trim()) throw new Error(`El parámetro 'eventName' debe un 'string' válido.`)
+		if (handler && typeof handler !== 'function') throw new Error(`El parámetro 'handler' debe ser de tipo 'function'`)
+
+		const handlers = this._.handlers[eventName]
+		if (!handlers?.length) return
+		for (const [i, h] of handlers.entries()) {
+			if (h === handler) {
+				handlers.splice(i, 1)
+				return
+			}
+		}
 	}
 
 	play(startLoop = 0) {
@@ -610,8 +655,9 @@ class Polimot {
 			return
 		}
 		let start = performance.now() - this._.currentTime * (this._.direction === 'reverse' ? -1 : 1)
-		let animate = function (time) {
-			let currentTime = this._.direction === 'reverse' ? Math.max(Math.min(this._.speed * (start - time), this._.duration), 0) :
+		let animate = time => {
+			const currentTime = this._.direction === 'reverse' ?
+				Math.max(Math.min(this._.speed * (start - time), this._.duration), 0) :
 				Math.min(Math.max(this._.speed * (time - start), 0), this._.duration)
 			this._.setFrame(currentTime)
 			/* Si el mainTime se desborda de la duración de la animación total, se detiene la animación */
@@ -629,7 +675,7 @@ class Polimot {
 			this._.currentTime = currentTime
 			/* Si aún sigue la animación, se invoca a un nuevo frame. */
 			if (this._.status === 'playing') this._.requestAnimationFrameID = requestAnimationFrame(animate)
-		}.bind(this)
+		}
 		this._.requestAnimationFrameID = requestAnimationFrame(animate)
 	}
 

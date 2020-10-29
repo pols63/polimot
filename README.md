@@ -58,12 +58,21 @@ La función constructora puede recibir uno o más parámetros. Cada uno de ellos
 * **startTime (opcional) (por defecto es undefined):** Indica el tiempo en milisegundos en el que iniciará la animación. A diferencia de `delay`, cuando se pasan al constructor varios objetos de configuración, este parámetro indicará en la línea de tiempo global, en qué momento este objeto será tomado en cuenta, a partir de ese momento, la animación ocurrirá luego del tiempo indicado en `delay`.
 
 * **begin (opcional) (por defecto es undefined):** Callback que se ejecuta cuando se inicia la animación por cada elemento de configuración. Si `target` da como resultado más de un elemento a animar, el callback se ejecutará una vez por cada uno de esos elementos.
-
 - **complete (opcional) (por defecto es undefined):** Callback que se ejecuta cuando la animación ha terminado por cada elemento de configuración. Igual que `begin`, si target da como resultado más de un elemento a animar, el callback se ejecutará una vez por cada uno de esos elementos. Si la animación es pausada antes de completar la animación de un elemento, el callback no se ejecutará.
 
 - **update (opcional) (por defecto es undefined):** Callback que se ejecuta por cada frame de la animación. Polimot utiliza internamente la función `requestAnimationFrame` para realizar el renderizado del siguiente frame, haciendo que la animación no se ejecuté si la página no está visible o el navegador está minimizado, por lo que este callback no se ejecutará en esos casos.
 
 Cuando se pasan varios objetos de configuración, cada uno de ellos se ejecutará luego que el primero acabe.
+
+## Target
+
+Es el objeto a animar el cuál puede ser un elemento HTML o cualquier otro objeto. Si se le pasa una cadena, ésta será utilizada para seleccionar elementos HTML por medio de la función `documento.querySelectorAll()` y animarlos a todos. Si se pasa un arreglo, cada elemento será evaluado con el mismo criterio animando a aquellos que sean elementos HTML u objetos, o si es una cadena será utilizada para seleccionar elementos HTML o si es otro arreglo, evaluará sus elementos también. Si el valor pasado no es válido, o si la selección de elementos arrojó una colección de nodos vacía, se arrojará un error.
+
+Si al término de la evaluacón de `target`, el resultado son varios elementos a animar, ocurrirá lo siguiente:
+
+* La propiedad stagger estará disponible.
+
+* Los callback `begin`, `update` y `complete` se ejecutarán por cada elemento encontrado en `target`. Si esto no es lo deseado, puede consultar el apartado de eventos.
 
 ## style, props, attrs y cssVars
 
@@ -153,7 +162,7 @@ anim.play()
 
 Tenga en cuenta que en esta ocasión, no se tomará en cuenta valor de `opacity` encontrado en el elemento, sino que será sobreescrito al primer valor del arreglo.
 
-### 2. Si existe algún elemento de tipo cadena, ésta será utilizada como una plantilla para colocar el valor al atributo en animación.
+### 2. Si existe algún elemento de tipo cadena, ésta será utilizada como una plantilla para establecer el valor al atributo en animación.
 
 La plantilla debe contener el caracter `?` que será reemplazado por el valor resultante de la animación.
 
@@ -166,7 +175,6 @@ Para el elemento:
 ```
 
 ```javascript
-// Volviendo con 'opacity'
 const anim = new Polimot({
     target: 'div',
     style: {
@@ -200,3 +208,86 @@ const anim = new Polimot({
 })
 anim.play()
 ```
+
+## 3. Si existe algún valor de tipo función, al igual que el valor de tipo cadena, la función será utilizada para obtener el valor a establecer en el atributo en animación.
+
+Ejemplo:
+
+Para el elemento:
+
+```html
+<div></div>
+```
+
+```javascript
+const anim = new Polimot({
+    target: 'div',
+    style: {
+        width: [0, 100, 50, n => `${n}px`]
+    }
+})
+anim.play()
+// La animación modificará el atributo CSS 'width' desde 0px hasta 100px, luego hasta 50px.
+```
+
+Pese a que la animación tomará los valores encontrados en el arreglo para hacer el recorrido, la función podría modificar el resultado:
+
+```javascript
+const anim = new Polimot({
+    target: 'div',
+    style: {
+        width: [0, 100, 50, n => `${2 * n}px`]
+    }
+})
+anim.play()
+// La animación modificará el atributo CSS 'width' desde 0px hasta 200px, luego hasta 100px.
+```
+
+## Valor de propiedad como Objeto
+
+Se puede pasar un objeto de configuración que no únicamente determina los valores que se usará en la animación, sino qué tipo de transformación tendrá:
+
+Ejemplo:
+
+Para el elemento:
+
+```html
+<div></div>
+```
+
+```javascript
+const anim = new Polimot({
+    target: 'div',
+    style: {
+        width: {
+            values: [0, 100, 50, '?px'],
+            easing: 'inElastic'
+        }
+    }
+})
+anim.play()
+// La animación modificará el atributo CSS 'width' desde 0px hasta 100px, luego hasta 50px.
+```
+
+El ejemplo de arriba también se puede representar así:
+
+```javascript
+const anim = new Polimot({
+    target: 'div',
+    style: {
+        width: {
+            values: [0, 100, 50],
+            easing: 'inElastic',
+            result: n => `${n}px`
+        }
+    }
+})
+anim.play()
+// La animación modificará el atributo CSS 'width' desde 0px hasta 100px, luego hasta 50px.
+```
+
+## Propiedades
+
+El objeto de clase `Polimot` tiene la siguientes propiedades:
+
+* duration (sólo lectura): La duración total de la animación.
