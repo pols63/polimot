@@ -39,7 +39,7 @@ let anim = new Polimot({
 anim.play()
 ```
 
-## Configurando la animación
+## Configurando la animación: timelines
 
 La función constructora puede recibir uno o más parámetros. Cada uno de ellos debe ser un objeto de configuración (también llamados `timeline`) en la que se puede definir las siguientes propiedades:
 
@@ -55,14 +55,12 @@ La función constructora puede recibir uno o más parámetros. Cada uno de ellos
 
 * **props, attrs, style, cssVars (requerido al menos uno de ellos):** Objetos cuyas propiedades apuntan a las propiedades del elemento a animar. Cada propiedad es un intervalo. La construcción de estos objetos se verá más adelante.
 
-* **startTime (opcional) (por defecto es undefined):** Indica el tiempo en milisegundos en el que iniciará la animación. A diferencia de `delay`, cuando se pasan al constructor varios objetos de configuración, este parámetro indicará en la línea de tiempo global, en qué momento este objeto será tomado en cuenta, a partir de ese momento, la animación ocurrirá luego del tiempo indicado en `delay`.
+* **startTime (opcional) (por defecto es undefined):** Indica el tiempo en milisegundos en el que iniciará la animación. A diferencia de `delay`, cuando se pasan al constructor varios timelines, este parámetro indicará en la línea de tiempo global, en qué momento este objeto será tomado en cuenta, a partir de ese momento, la animación ocurrirá luego del tiempo indicado en `delay`. Cuando se pasan varios timelines, cada uno de ellos será puesto después del anterior si es que no se ha especificado manualmente la propiedad `startTime`.
 
-* **begin (opcional) (por defecto es undefined):** Callback que se ejecuta cuando se inicia la animación por cada elemento de configuración. Si `target` da como resultado más de un elemento a animar, el callback se ejecutará una vez por cada uno de esos elementos.
-- **complete (opcional) (por defecto es undefined):** Callback que se ejecuta cuando la animación ha terminado por cada elemento de configuración. Igual que `begin`, si target da como resultado más de un elemento a animar, el callback se ejecutará una vez por cada uno de esos elementos. Si la animación es pausada antes de completar la animación de un elemento, el callback no se ejecutará.
+* **begin (opcional) (por defecto es undefined):** Callback que se ejecuta cuando se inicia la animación por cada elemento de configuración.
+- **complete (opcional) (por defecto es undefined):** Callback que se ejecuta cuando la animación ha terminado por cada elemento de configuración. Si la animación es pausada antes de completar la animación de un elemento, el callback no se ejecutará.
 
 - **update (opcional) (por defecto es undefined):** Callback que se ejecuta por cada frame de la animación. Polimot utiliza internamente la función `requestAnimationFrame` para realizar el renderizado del siguiente frame, haciendo que la animación no se ejecuté si la página no está visible o el navegador está minimizado, por lo que este callback no se ejecutará en esos casos.
-
-Cuando se pasan varios objetos de configuración, cada uno de ellos se ejecutará luego que el primero acabe.
 
 ## Target
 
@@ -76,9 +74,19 @@ Si al término de la evaluacón de `target`, el resultado son varios elementos a
 
 ## begin, complete y update
 
-Los callbacks begin, complete y update se ejecutan de la siguiente forma:
+Los callbacks `begin`, `complete` y `update` se ejecutan de la siguiente forma:
 
-* Cuando un timeline inicia su animación, se ejecuta el callback `begin`. Teniendo en cuenta que si target da como resultado varios elementos, existirán también varios `timeline`.
+* Cuando un timeline inicia su animación, se ejecuta el callback `begin`.
+* Mientras la animación ocurre, se irá ejecutando el callback `update`, siempre que la animación sea visible.
+* Cuando un timeline termina su animación, se ejecuta el callback `complete`.
+
+¿Qué ocurre cuando una animación no es visible?:
+
+* Debido a que Polimot utiliza la función requestAnimationFrame para realizar las animaciones, los callbacks no siempre serán llamado en el momento de empezar, actualizar o terminar la animación.
+
+* Si una animación inició y terminó no están visible el navegador, los callbacks `begin` y `complete` se reservan hasta que la página llegue a estar visible, recién en ese momento serán ejecutados, pero note que el callback `update` no habrá sido llamado ni una sola vez.
+
+Utilice los callbacks para expandir las posibilidades de animación y no como temporizadores.
 
 ## style, props, attrs y cssVars
 

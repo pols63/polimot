@@ -390,35 +390,28 @@ class Polimot {
 			return definitionTemplate
 		}
 
+		/* Esta función evaluará los timeline establecidos por el desarrollor. Analizará lo entregado en 'target' y si es necesario, creará 1 timeline por cada target encontrado. También agregará un timeline adicional que manejará los callbacks */
 		this._.makeTimeline = (timeline, idxTimeline, reference) => {
 			/* Valida que tenga definida la propiedad target. */
 			if (!timeline.target) throw new Error(`El timeline ${idxTimeline} no tiene definido correctamente la propiedad "target".`)
-			let targets = this._.detectTarget(timeline.target, idxTimeline)
-			if (targets.length === 0) {
-				console.log('No se pudo detectar ningún elemento como "target" para en el timeline ' + idxTimeline + '.')
-				return
-			}
+			const targets = this._.detectTarget(timeline.target, idxTimeline)
+			if (!targets.length) throw new Error('No se pudo detectar ningún elemento como "target" para en el timeline ' + idxTimeline + '.')
 
 			/* Si la propiedad easing es un array, se compila para obtener la función cubicBezier correspondiente */
 			let easing = this._.detectEasing(timeline.easing)
 
-			let timelines = []
+			const timelines = []
 
 			/* Detecta el tiempo de inicio */
 			let startTime = Number(timeline.startTime)
 			if (isNaN(startTime)) startTime = reference.markTime
 
-			targets.forEach(function (target, idxTarget) {
-				let stagger = timeline.stagger || 0
-				let delay = timeline.delay || 0
+			for (const [i, target] of targets.entries()) {
 				let timelineTemplate = {
 					target: target,
-					startTime: startTime + delay + stagger * idxTarget,
-					duration: (timeline.duration || 1000),
+					startTime: startTime + (Number(timeline.delay) || 0) + (Number(timeline.stagger) || 0) * i,
+					duration: Number(timeline.duration) || 1000,
 					easing: easing,
-					begin: timeline.begin || null,
-					update: timeline.update || null,
-					complete: timeline.complete || null,
 					attrs: timeline.attrs ? { ...timeline.attrs } : null,
 					props: timeline.props ? { ...timeline.props } : null,
 					style: timeline.style ? { ...timeline.style } : null,
@@ -436,7 +429,19 @@ class Polimot {
 				}.bind(this))
 
 				timelines.push(timelineTemplate)
-			}.bind(this))
+			}
+
+			if (typeof timeline.begin === 'function' || typeof timeline.complete === 'function' || typeof timeline.update === 'function') {
+				const callbacksTimeline = {
+					startTime: timelines[0].startTime,
+					endTime: timelines[timelines.length - 1].endTime,
+					begin: timeline.begin || null,
+					update: timeline.update || null,
+					complete: timeline.complete || null,
+				}
+				callbacksTimeline.duration = callbacksTimeline.startTime - callbacksTimeline.endTime
+				timelines.push(callbacksTimeline)
+			}
 
 			/* Actualiza la marca de tiempo */
 			reference.markTime = timelines[timelines.length - 1].endTime
@@ -457,10 +462,12 @@ class Polimot {
 		}
 
 		/* Dibuja el frame estableciendo todas las propiedades a los targets */
-		this._.drawFrame = function (subTime, timeline) {
+		this._.drawFrame = (subTime, timeline) => {
 			let percentTime = subTime / timeline.duration
 			let transformDefinitions = []
 			let clipPathDefinitions = []
+			/* Si el timeline no tiene target, se retira de la función */
+			if (!timeline.target) return
 			/* Identifica las definiciones */
 			for (const definitionType of Polimot.definitionTypes) {
 				let groupDefinitions = timeline[definitionType]
@@ -532,7 +539,7 @@ class Polimot {
 				let toExecuteBeforeDraw = []
 				let toExecuteAfterDraw = []
 				const param = {
-					target: timeline.target,
+					// target: timeline.target,
 					currentTime,
 					direction: this._.direction,
 					duration: timeline.duration
