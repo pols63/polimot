@@ -190,7 +190,8 @@ class Polimot {
 			loop: 0,
 			countingLoop: 0,
 			speed: 1,
-			handlers: {}
+			handlers: {},
+			eventsExecuted: []
 		}
 
 		/* Identifica los target dentro de un timeline, esta función es recursiva, debido a que el target puede ser un arreglo lo que hará necesario iterar en él. */
@@ -589,13 +590,21 @@ class Polimot {
 					status: this._.status
 				}
 				/* Evalúa si se ejecutan los eventos */
-				if (currentTime === 0 && this._.handlers.begin?.length) {
-					param.event = 'begin'
-					for (const handler of this._.handlers.begin) handler(param)
+				if (currentTime === 0 || (!this._.eventsExecuted.includes('begin') && this._.direction === 'normal')) {
+					if (this._.handlers.begin?.length) {
+						param.event = 'begin'
+						param.currentTime = 0
+						for (const handler of this._.handlers.begin) handler(param)
+					}
+					this._.eventsExecuted.push('begin')
 				}
-				if (currentTime === this._.duration && this._.handlers.complete?.length) {
-					param.event = 'complete'
-					for (const handler of this._.handlers.complete) handler(param)
+				if (currentTime === this._.duration || (!this._.eventsExecuted.includes('complete') && this._.direction === 'reverse')) {
+					if (this._.handlers.complete?.length) {
+						param.event = 'complete'
+						param.currentTime = this._.duration
+						for (const handler of this._.handlers.complete) handler(param)
+					}
+					this._.eventsExecuted.push('complete')
 				}
 				if (this._.handlers.update?.length) {
 					param.event = 'update'
@@ -640,12 +649,15 @@ class Polimot {
 		if (!this._.duration || !this._.speed) return
 		if (this._.status === 'pause') {
 			if (this._.currentTime === this._.duration && this._.direction !== 'reverse') {
+				this._.eventsExecuted = []
 				this._.countingLoop = startLoop
 				this.currentTime = 0
 			} else if (this._.currentTime === 0 && this._.direction === 'reverse') {
+				this._.eventsExecuted = []
 				this._.countingLoop = startLoop
 				this.currentTime = this._.duration
 			} else if (this._.currentTime === 0 && this._.direction !== 'reverse') {
+				this._.eventsExecuted = []
 				this.currentTime = 0
 			} else if (this._.currentTime === this._.duration && this._.direction === 'reverse') {
 				this.currentTime = this._.duration

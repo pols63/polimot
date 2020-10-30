@@ -41,7 +41,7 @@ anim.play()
 
 ## Configurando la animación
 
-La función constructora puede recibir uno o más parámetros. Cada uno de ellos debe ser un objeto de configuración en la que se puede definir las siguientes propiedades:
+La función constructora puede recibir uno o más parámetros. Cada uno de ellos debe ser un objeto de configuración (también llamados `timeline`) en la que se puede definir las siguientes propiedades:
 
 * **target (requerido):** Es el objeto a animar el cuál puede ser un elemento HTML o cualquier otro objeto. Si se le pasa una cadena, ésta será utilizada para seleccionar elementos HTML por medio de la función `documento.querySelectorAll()` y animarlos a todos. Si se pasa un arreglo, cada elemento será evaluado con el mismo criterio animando a aquellos que sean elementos HTML u objetos, o si es una cadena será utilizada para seleccionar elementos HTML o si es otro arreglo, evaluará sus elementos también. Si el valor pasado no es válido, o si la selección de elementos arrojó una colección de nodos vacía, se arrojará un error.
 
@@ -73,6 +73,12 @@ Si al término de la evaluacón de `target`, el resultado son varios elementos a
 * La propiedad stagger estará disponible.
 
 * Los callback `begin`, `update` y `complete` se ejecutarán por cada elemento encontrado en `target`. Si esto no es lo deseado, puede consultar el apartado de eventos.
+
+## begin, complete y update
+
+Los callbacks begin, complete y update se ejecutan de la siguiente forma:
+
+* Cuando un timeline inicia su animación, se ejecuta el callback `begin`. Teniendo en cuenta que si target da como resultado varios elementos, existirán también varios `timeline`.
 
 ## style, props, attrs y cssVars
 

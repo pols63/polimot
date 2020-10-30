@@ -77,7 +77,9 @@
 		begin: () => console.log('a'),
 		complete: () => console.log('b'),
 	})
-	anim2.play()
+	anim2.on('begin', console.log)
+	anim2.on('complete', console.log)
+	// anim2.play()
 
 	// setTimeout(() => {
 	// 	anim.play()
