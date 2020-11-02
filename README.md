@@ -45,7 +45,7 @@ La función constructora puede recibir uno o más parámetros. Cada uno de ellos
 
 * **target (requerido):** Es el objeto a animar el cuál puede ser un elemento HTML o cualquier otro objeto. Si se le pasa una cadena, ésta será utilizada para seleccionar elementos HTML por medio de la función `documento.querySelectorAll()` y animarlos a todos. Si se pasa un arreglo, cada elemento será evaluado con el mismo criterio animando a aquellos que sean elementos HTML u objetos, o si es una cadena será utilizada para seleccionar elementos HTML o si es otro arreglo, evaluará sus elementos también. Si el valor pasado no es válido, o si la selección de elementos arrojó una colección de nodos vacía, se arrojará un error.
 
-* **duration (opcional) (por defecto igual a 1000):** Tiempo de duración de la animación en milisegundos.
+* **duration (opcional) (por defecto igual a 1000):** Tiempo de duración de la animación del timeline en milisegundos.
 
 * **stagger (opcional) (por defecto igual a 0):** Es aplicable cuando `target` luego de ser evaluado da como resultado una colección de elementos, de ser así, la animación para cada elemento empezará con un retraso respecto al anterior según el valor entregado en milisegundos.
 
@@ -66,11 +66,7 @@ La función constructora puede recibir uno o más parámetros. Cada uno de ellos
 
 Es el objeto a animar el cuál puede ser un elemento HTML o cualquier otro objeto. Si se le pasa una cadena, ésta será utilizada para seleccionar elementos HTML por medio de la función `documento.querySelectorAll()` y animarlos a todos. Si se pasa un arreglo, cada elemento será evaluado con el mismo criterio animando a aquellos que sean elementos HTML u objetos, o si es una cadena será utilizada para seleccionar elementos HTML o si es otro arreglo, evaluará sus elementos también. Si el valor pasado no es válido, o si la selección de elementos arrojó una colección de nodos vacía, se arrojará un error.
 
-Si al término de la evaluacón de `target`, el resultado son varios elementos a animar, ocurrirá lo siguiente:
-
-* La propiedad stagger estará disponible.
-
-* Los callback `begin`, `update` y `complete` se ejecutarán por cada elemento encontrado en `target`. Si esto no es lo deseado, puede consultar el apartado de eventos.
+Si al término de la evaluacón de `target`, el resultado son varios elementos a animar, la propiedad del timeline `stagger` estará disponible.
 
 ## begin, complete y update
 
@@ -88,7 +84,7 @@ Los callbacks `begin`, `complete` y `update` se ejecutan de la siguiente forma:
 
 Utilice los callbacks para expandir las posibilidades de animación y no como temporizadores.
 
-## style, props, attrs y cssVars
+## Categorías animables: style, props, attrs y cssVars
 
 Cada uno de estas propiedades dentro de un objeto de configuración anima una cualidad diferente en el elemento seleccionado en `target`:
 
@@ -110,7 +106,7 @@ Las propiedades anidadas dentro de `style`, `props`, `attrs` y `cssVars` pueden 
 
 * Objeto de configuración.
 
-## Valor de propiedad como número
+### Valor de propiedad como número
 
 Si las propiedades anidadas en `style`, `props`, `attrs` y `cssVars` son de tipo número, tal valor será el establecido al final de la animación.
 
@@ -148,11 +144,11 @@ anim.play()
 
 Para este caso, se requiere utilizar valores de tipo arreglo.
 
-## Valor de propiedad como arreglo
+### Valor de propiedad como arreglo
 
 Si las propiedades anidadas en `style`, `props`, `attrs` y `cssVars` son de tipo arreglo, ocurrirá lo siguiente:
 
-### 1. Se tomarán todos los elementos numéricos. Éstos actuarán como valores clave para animación.
+#### 1. Se tomarán todos los elementos numéricos. Éstos actuarán como valores clave para animación.
 
 Ejemplo:
 
@@ -176,7 +172,7 @@ anim.play()
 
 Tenga en cuenta que en esta ocasión, no se tomará en cuenta valor de `opacity` encontrado en el elemento, sino que será sobreescrito al primer valor del arreglo.
 
-### 2. Si existe algún elemento de tipo cadena, ésta será utilizada como una plantilla para establecer el valor al atributo en animación.
+#### 2. Si existe algún elemento de tipo cadena, ésta será utilizada como una plantilla para establecer el valor al atributo en animación.
 
 La plantilla debe contener el caracter `?` que será reemplazado por el valor resultante de la animación.
 
@@ -223,7 +219,7 @@ const anim = new Polimot({
 anim.play()
 ```
 
-## 3. Si existe algún valor de tipo función, al igual que el valor de tipo cadena, la función será utilizada para obtener el valor a establecer en el atributo en animación.
+#### 3. Si existe algún valor de tipo función, al igual que el valor de tipo cadena, la función será utilizada para obtener el valor a establecer en el atributo en animación.
 
 Ejemplo:
 
@@ -300,8 +296,65 @@ anim.play()
 // La animación modificará el atributo CSS 'width' desde 0px hasta 100px, luego hasta 50px.
 ```
 
+## La categoría de animación "style"
+
+En la categoría `style` se puede referencias a cualquier propiedad `css`, pero existe una mejora con respecto a las funciones que van dentro de la propiedad `transform`, ya que tales funciones pueden ser propiedades animables dentro de `style`:
+
+Ejemplo:
+
+```javascript
+const anim = new Polimot({
+    target: 'div',
+    style: {
+        scaleX: [0.5, 1.5], /* scale no requiere unidades */
+        rotate: [0, 360, '?deg']
+    }
+})
+```
+
 ## Propiedades
 
-El objeto de clase `Polimot` tiene la siguientes propiedades:
+El objeto creado de clase `Polimot` tiene la siguientes propiedades:
 
-* duration (sólo lectura): La duración total de la animación.
+* **duration (sólo lectura):** La duración total de la animación.
+* **speed (lectura/escritura):** La velocidad de la animación.
+* **direction (lectura/escritura):** La dirección de la animación, adopta sólo dos valores: `normal` y `reverse`.
+* **currentTime (lectura/escritura):** El tiempo actual en que la animación se encuentra con respecto a `duration`.
+* status (sólo lectura): Indica el estado de la animación. Puede entregar sólo dos valores: `paused` y `playing`. Si una animación se termina, su estado será `paused`.
+
+## Métodos
+
+* **on(eventName, handler):** Agrega un evento de nombre `eventName`. Ambos parámetros son requeridos. eventName sólo puede ser `begin`, `update` y `complete`.
+* **off(eventName, handler):** Elimina un evento de nombre `eventName`. Sólo el segundo parámetro es opcional y cuando es pasado, sólo se elimina del evento `eventName` la función `handler`. Si el segundo parámetro no se pasa, se eliminan todos los manejadores de `eventName`.
+
+Ejemplo:
+
+```javascript
+const anim = new Polimot(/* timelines */)
+const begin1 = event => console.log('begin 1')
+const begin2 = event => console.log('begin 2')
+anim.on('begin', begin1)
+anim.on('begin', begin2)
+anim.play()
+/* En consola se verá: 'begin 1' y 'begin 2' */
+anim.off('begin', begin1)
+anim.play()
+/* En consola se verá: 'begin 2' */
+anim.off('begin') /* Elimina todos los manejadores para 'begin' */
+anim.play()
+/* Sin mensajes en la consola. */
+```
+
+* **play():** Inicia la animación o la continua en caso haya sido pausada antes de acaba.
+
+* **pause():** Pausa la animación.
+
+* **restart():** Detiene la animación y la reinicia a su primer frame teniendo en cuenta el valor de `direction`.
+
+* **toggleDirection():** Permuta el valor de la propiedad `direction` entre `normal` y `reverse`.
+
+* **add(timeline):** Agrega un nuevo timeline al final de todos los establecidos previamente.
+
+## Eventos
+
+Los eventos se ejecután para toda la animación, mientras que los callback son llamados por timeline. Los eventos disponibles son `begin`, `update` y complete y su lógica de ejecución es la misma que la de l,os callbacks.

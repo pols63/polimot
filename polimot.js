@@ -183,7 +183,7 @@ class Polimot {
 	constructor(...timelines) {
 		this._ = {
 			timelines: [],
-			status: 'pause',
+			status: 'paused',
 			direction: 'normal',
 			currentTime: 0,
 			duration: 0,
@@ -451,7 +451,7 @@ class Polimot {
 
 		/* Compila el motor obteniendo los timeline resultantes. */
 		this._.compile = () => {
-			if (this._.status === 'pause') this.pause()
+			if (this._.status === 'paused') this.pause()
 			let reference = {
 				markTime: 0
 			}
@@ -642,19 +642,23 @@ class Polimot {
 		if (!eventName.trim()) throw new Error(`El parámetro 'eventName' debe un 'string' válido.`)
 		if (handler && typeof handler !== 'function') throw new Error(`El parámetro 'handler' debe ser de tipo 'function'`)
 
-		const handlers = this._.handlers[eventName]
-		if (!handlers?.length) return
-		for (const [i, h] of handlers.entries()) {
-			if (h === handler) {
-				handlers.splice(i, 1)
-				return
+		if (handler) {
+			const handlers = this._.handlers[eventName]
+			if (!handlers?.length) return
+			for (const [i, h] of handlers.entries()) {
+				if (h === handler) {
+					handlers.splice(i, 1)
+					return
+				}
 			}
+		} else {
+			delete this._.handlers[eventName]
 		}
 	}
 
 	play(startLoop = 0) {
 		if (!this._.duration || !this._.speed) return
-		if (this._.status === 'pause') {
+		if (this._.status === 'paused') {
 			if (this._.currentTime === this._.duration && this._.direction !== 'reverse') {
 				this._.eventsExecuted = []
 				this._.countingLoop = startLoop
@@ -688,7 +692,7 @@ class Polimot {
 					start = performance.now() - this._.currentTime * (this._.direction === 'reverse' ? -1 : 1)
 				} else {
 					this._.countingLoop = 0
-					this._.status = 'pause'
+					this._.status = 'paused'
 				}
 			}
 			this._.currentTime = currentTime
@@ -700,7 +704,7 @@ class Polimot {
 
 	pause() {
 		if (this._.requestAnimationFrameID) cancelAnimationFrame(this._.requestAnimationFrameID)
-		if (this._.status === 'playing') this._.status = 'pause'
+		if (this._.status === 'playing') this._.status = 'paused'
 	}
 
 	restart() {
