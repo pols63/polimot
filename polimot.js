@@ -406,6 +406,9 @@ class Polimot {
 			let startTime = Number(timeline.startTime)
 			if (isNaN(startTime)) startTime = reference.markTime
 
+			const beginCallback = timeline.begin
+			const completeCallback = timeline.complete
+
 			for (const [i, target] of targets.entries()) {
 				let timelineTemplate = {
 					target: target,
@@ -417,27 +420,27 @@ class Polimot {
 					style: timeline.style ? { ...timeline.style } : null,
 					cssVars: timeline.cssVars ? { ...timeline.cssVars } : null,
 					steps: Number(timeline.steps) || 0,
+					begin: i === 0 ? beginCallback : undefined,
+					complete: i === targets.length - 1 ? completeCallback : undefined,
 				}
 				timelineTemplate.endTime = timelineTemplate.startTime + timelineTemplate.duration
 				this._.duration = Math.max(this._.duration, timelineTemplate.endTime)
 
 				/* Compila las definiciones */
-				Polimot.definitionTypes.forEach(function (definitionType, idxDefinitionType) {
+				Polimot.definitionTypes.forEach(definitionType => {
 					for (let name in timelineTemplate[definitionType]) {
 						timelineTemplate[definitionType][name] = this._.detectDefinition(timelineTemplate[definitionType][name], definitionType, target, name)
 					}
-				}.bind(this))
+				})
 
 				timelines.push(timelineTemplate)
 			}
 
-			if (typeof timeline.begin === 'function' || typeof timeline.complete === 'function' || typeof timeline.update === 'function') {
+			if (typeof timeline.update === 'function') {
 				const callbacksTimeline = {
 					startTime: timelines[0].startTime,
 					endTime: timelines[timelines.length - 1].endTime,
-					begin: timeline.begin || null,
-					update: timeline.update || null,
-					complete: timeline.complete || null,
+					update: timeline.update,
 				}
 				callbacksTimeline.duration = callbacksTimeline.startTime - callbacksTimeline.endTime
 				timelines.push(callbacksTimeline)
